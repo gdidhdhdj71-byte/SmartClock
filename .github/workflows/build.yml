@@ -1,0 +1,49 @@
+name: Build Clock APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Cordova
+        run: npm install -g cordova
+
+      - name: Create App
+        run: |
+          cordova create clockapp com.smartclock.pro SmartClock
+          cd clockapp
+          cordova platform add android
+
+          rm -rf www/*
+          cp ../index.html www/
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 17
+
+      - name: Build APK
+        run: |
+          cd clockapp
+          cordova build android --debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartClock-APK
+          path: clockapp/platforms/android/app/build/outputs/apk/debug/*.apk
