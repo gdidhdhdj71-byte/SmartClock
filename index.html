@@ -1,39 +1,140 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Clock APK</title>
+
+<title>SmartClock Pro v2</title>
 
 <style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
 body{
 background:#121212;
 color:white;
-font-family:Arial,sans-serif;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-flex-direction:column;
-margin:0;
+text-align:center;
+padding:20px;
 }
 
-#clock{
-font-size:60px;
+h1{
+margin-bottom:20px;
+}
+
+.card{
+background:#1e1e1e;
+padding:20px;
+border-radius:15px;
+margin:15px auto;
+max-width:500px;
+box-shadow:0 0 10px rgba(255,255,255,0.1);
+}
+
+#digitalClock{
+font-size:45px;
 font-weight:bold;
 }
 
 #date{
-font-size:22px;
 margin-top:10px;
+font-size:18px;
 }
-</style>
 
+canvas{
+background:white;
+border-radius:50%;
+margin-top:15px;
+}
+
+button{
+padding:10px 15px;
+margin:5px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:16px;
+}
+
+input{
+padding:10px;
+border-radius:8px;
+border:none;
+width:100px;
+text-align:center;
+}
+
+.start{
+background:#28a745;
+color:white;
+}
+
+.stop{
+background:#dc3545;
+color:white;
+}
+
+.reset{
+background:#007bff;
+color:white;
+}
+
+</style>
 </head>
+
 <body>
 
-<div id="clock">00:00:00</div>
+<h1>SmartClock Pro v2</h1>
+
+<div class="card">
+
+<div id="digitalClock">00:00:00</div>
+
 <div id="date"></div>
+
+</div>
+
+<div class="card">
+
+<h2>Analog Clock</h2>
+
+<canvas id="clockCanvas" width="250" height="250"></canvas>
+
+</div>
+
+<div class="card">
+
+<h2>Stopwatch</h2>
+
+<h1 id="stopwatch">00:00:00</h1>
+
+<button class="start" onclick="startSW()">Start</button>
+
+<button class="stop" onclick="stopSW()">Stop</button>
+
+<button class="reset" onclick="resetSW()">Reset</button>
+
+</div>
+
+<div class="card">
+
+<h2>Countdown Timer</h2>
+
+<input id="timerInput" type="number" placeholder="Sec">
+
+<br><br>
+
+<h1 id="timerDisplay">0</h1>
+
+<button class="start" onclick="startTimer()">Start</button>
+
+<button class="reset" onclick="resetTimer()">Reset</button>
+
+</div>
 
 <script>
 
@@ -41,7 +142,7 @@ function updateClock(){
 
 const now=new Date();
 
-document.getElementById("clock").innerHTML=
+document.getElementById("digitalClock").innerHTML=
 now.toLocaleTimeString();
 
 document.getElementById("date").innerHTML=
@@ -52,6 +153,149 @@ now.toDateString();
 setInterval(updateClock,1000);
 
 updateClock();
+
+const canvas=document.getElementById("clockCanvas");
+
+const ctx=canvas.getContext("2d");
+
+function drawClock(){
+
+const radius=100;
+
+const now=new Date();
+
+ctx.clearRect(0,0,250,250);
+
+ctx.beginPath();
+ctx.arc(125,125,radius,0,Math.PI*2);
+ctx.stroke();
+
+let sec=now.getSeconds();
+let min=now.getMinutes();
+let hr=now.getHours()%12;
+
+drawHand(hr*30+min/2,60,6);
+drawHand(min*6,80,4);
+drawHand(sec*6,90,2);
+
+}
+
+function drawHand(angle,length,width){
+
+ctx.beginPath();
+
+ctx.lineWidth=width;
+
+ctx.moveTo(125,125);
+
+ctx.lineTo(
+125+length*Math.sin(angle*Math.PI/180),
+125-length*Math.cos(angle*Math.PI/180)
+);
+
+ctx.stroke();
+
+}
+
+setInterval(drawClock,1000);
+
+drawClock();
+
+let swTime=0;
+
+let swInterval;
+
+function startSW(){
+
+if(swInterval) return;
+
+swInterval=setInterval(()=>{
+
+swTime++;
+
+updateSW();
+
+},1000);
+
+}
+
+function stopSW(){
+
+clearInterval(swInterval);
+
+swInterval=null;
+
+}
+
+function resetSW(){
+
+swTime=0;
+
+updateSW();
+
+}
+
+function updateSW(){
+
+let h=Math.floor(swTime/3600);
+
+let m=Math.floor((swTime%3600)/60);
+
+let s=swTime%60;
+
+document.getElementById("stopwatch").innerHTML=
+
+String(h).padStart(2,'0')+":"+
+
+String(m).padStart(2,'0')+":"+
+
+String(s).padStart(2,'0');
+
+}
+
+let timerInterval;
+
+let timerSeconds=0;
+
+function startTimer(){
+
+timerSeconds=parseInt(
+
+document.getElementById("timerInput").value
+
+)||0;
+
+clearInterval(timerInterval);
+
+document.getElementById("timerDisplay").innerHTML=
+timerSeconds;
+
+timerInterval=setInterval(()=>{
+
+timerSeconds--;
+
+document.getElementById("timerDisplay").innerHTML=
+timerSeconds;
+
+if(timerSeconds<=0){
+
+clearInterval(timerInterval);
+
+alert("Timer Finished!");
+
+}
+
+},1000);
+
+}
+
+function resetTimer(){
+
+clearInterval(timerInterval);
+
+document.getElementById("timerDisplay").innerHTML="0";
+
+}
 
 </script>
 
